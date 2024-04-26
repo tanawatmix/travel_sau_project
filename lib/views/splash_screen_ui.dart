@@ -1,41 +1,41 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:travel_sau_project/views/login_ui.dart';
 
-class SplashScreeUI extends StatefulWidget {
-  const SplashScreeUI({super.key});
+class SplashScreenUI extends StatefulWidget {
+  const SplashScreenUI({super.key});
 
   @override
-  State<SplashScreeUI> createState() => _SplashScreenUIState();
+  State<SplashScreenUI> createState() => _SplashScreenUIState();
 }
 
-class _SplashScreenUIState extends State<SplashScreeUI> {
-  @override
+class _SplashScreenUIState extends State<SplashScreenUI> {
+
+@override
   void initState() {
     Future.delayed(
       Duration(
-        seconds: 3,
+        seconds: 3
       ),
-      () => Navigator.pushReplacement(
+      ()=> Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) => LoginUI(),
-        ),
-      ),
+        MaterialPageRoute(builder: (context)=> LoginUI())),
+
     );
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.yellow,
+      backgroundColor: Colors.amber,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/logo.png',
+              'assets/images/logo3.png',
               width: MediaQuery.of(context).size.width * 0.5,
             ),
             SizedBox(
@@ -45,7 +45,7 @@ class _SplashScreenUIState extends State<SplashScreeUI> {
               'บันทึกการเดินทาง',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: MediaQuery.of(context).size.height * 0.04,
+                fontSize: MediaQuery.of(context).size.height * 0.045,
               ),
             ),
             SizedBox(
@@ -61,14 +61,12 @@ class _SplashScreenUIState extends State<SplashScreeUI> {
               'Tanawat Netsutthirot',
               style: TextStyle(
                 color: Colors.grey[800],
-                fontSize: MediaQuery.of(context).size.height * 0.02,
               ),
             ),
             Text(
-              'DTI 6552410002',
+              'Created By 6552410002',
               style: TextStyle(
                 color: Colors.grey[800],
-                fontSize: MediaQuery.of(context).size.height * 0.02,
               ),
             ),
           ],

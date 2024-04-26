@@ -9,33 +9,35 @@ class Travel {
   String? locationTravel;
 
   Travel({
-    this.pictureTravel,
+    this.id,
     this.placeTravel,
     this.costTravel,
     this.dateTravel,
     this.dayTravel,
     this.locationTravel,
+    this.pictureTravel,
   });
 
   factory Travel.fromMap(Map<String, dynamic> json) {
     return Travel(
-      pictureTravel: json['pictureTravel'],
-      placeTravel: json['placeTravel'],
-      costTravel: json['costTravel'],
-      dateTravel: json['dateTravel'],
-      dayTravel: json['dayTravel'],
-      locationTravel: json['locationTravel'],
-    );
+        id: json['id'],
+        placeTravel: json['placeTravel'],
+        costTravel: json['costTravel'],
+        dateTravel: json['dateTravel'],
+        dayTravel: json['dayTravel'],
+        locationTravel: json['locationTravel'],
+        pictureTravel: json['pictureTravel']);
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'pictureTravel': pictureTravel,
+      'id': id,
       'placeTravel': placeTravel,
       'costTravel': costTravel,
       'dateTravel': dateTravel,
       'dayTravel': dayTravel,
       'locationTravel': locationTravel,
+      'pictureTravel': pictureTravel
     };
   }
 }

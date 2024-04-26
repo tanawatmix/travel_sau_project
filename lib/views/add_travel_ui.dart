@@ -1,51 +1,65 @@
-// ignore_for_file: prefer_const_constructors, sort_child_properties_last, use_build_context_synchronously
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, non_constant_identifier_names
 
-import 'dart:io';
+import "dart:io";
 
-import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:travel_sau_project/models/user.dart';
-import 'package:travel_sau_project/utils/db_helper.dart';
-import 'package:uuid/uuid.dart';
+import "package:flutter/material.dart";
+import "package:font_awesome_flutter/font_awesome_flutter.dart";
+import "package:google_fonts/google_fonts.dart";
+import "package:image_picker/image_picker.dart";
+import "package:intl/intl.dart";
+import "package:path_provider/path_provider.dart";
+import "package:travel_sau_project/models/travel.dart";
+import "package:travel_sau_project/utils/db_helper.dart";
+import "package:uuid/uuid.dart";
 
-class RegisterUI extends StatefulWidget {
-  const RegisterUI({super.key});
+class AddTravelUI extends StatefulWidget {
+  const AddTravelUI({super.key});
 
   @override
-  State<RegisterUI> createState() => _RegisterUIState();
+  State<AddTravelUI> createState() => _AddTravelUIState();
 }
 
-class _RegisterUIState extends State<RegisterUI> {
-  bool pwdStatus = true;
-
-  TextEditingController fullnameCtrl = TextEditingController(text: '');
-  TextEditingController emailCtrl = TextEditingController(text: '');
-  TextEditingController phoneCtrl = TextEditingController(text: '');
-  TextEditingController usernameCtrl = TextEditingController(text: '');
-  TextEditingController passwordCtrl = TextEditingController(text: '');
-
+class _AddTravelUIState extends State<AddTravelUI> {
   File? showImage;
   String? saveImage;
 
-  takePhoto() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.camera);
+  SelectPhoto() async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (image == null) return;
 
+    //เก็บรูปลงเครื่อง
     Directory appDirectory = await getApplicationDocumentsDirectory();
     String newDirectory = appDirectory.path + Uuid().v4();
     File newImageFile = File(newDirectory);
 
+    //เก็บรูปในตัวแปรที่สร้างไว้ใน DB
     saveImage = newDirectory;
 
     await newImageFile.writeAsBytes(File(image.path).readAsBytesSync());
-
     setState(() {
       showImage = newImageFile;
     });
+  }
+
+  TextEditingController placeTravelCtrl = TextEditingController(text: '');
+  TextEditingController costTravelCtrl = TextEditingController(text: '');
+  TextEditingController dateTravelCtrl = TextEditingController(text: '');
+  TextEditingController dayTravelCtrl = TextEditingController(text: '');
+
+  opencalendar() async {
+    DateTime? dateSelect = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1990),
+      lastDate: DateTime(2030),
+    );
+
+    if (dateSelect != null) {
+      setState(() {
+        dateTravelCtrl.text = DateFormat('dd MMMM yyyy').format(dateSelect);
+      });
+    }
   }
 
   showWarningMessage(context, msg) async {
@@ -74,18 +88,10 @@ class _RegisterUIState extends State<RegisterUI> {
       appBar: AppBar(
         backgroundColor: Colors.amber,
         title: Text(
-          'ลงทะเบียนเข้าใช้งาน',
+          'เพิ่มข้อมูลการเดินทาง',
           style: GoogleFonts.kanit(),
         ),
         centerTitle: true,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(
-            Icons.arrow_back_ios,
-          ),
-        ),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -109,21 +115,19 @@ class _RegisterUIState extends State<RegisterUI> {
                         )
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(100),
-                          child: ClipOval(
-                            child: Image.file(
-                              showImage!,
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              height: MediaQuery.of(context).size.width * 0.4,
-                              fit: BoxFit.cover,
-                            ),
+                          child: Image.file(
+                            showImage!,
+                            width: MediaQuery.of(context).size.width * 0.4,
+                            height: MediaQuery.of(context).size.width * 0.4,
+                            fit: BoxFit.cover,
                           ),
                         ),
                   IconButton(
                     onPressed: () {
-                      takePhoto();
+                      SelectPhoto();
                     },
                     icon: Icon(
-                      FontAwesomeIcons.cameraRetro,
+                      FontAwesomeIcons.photoFilm,
                       color: Colors.amber,
                     ),
                   ),
@@ -139,9 +143,9 @@ class _RegisterUIState extends State<RegisterUI> {
                   bottom: MediaQuery.of(context).size.width * 0.05,
                 ),
                 child: TextField(
-                  controller: fullnameCtrl,
+                  controller: placeTravelCtrl,
                   decoration: InputDecoration(
-                    labelText: 'ชื่อ-สกุล',
+                    labelText: 'ป้อนสถานที่ที่เดินทางไป',
                     labelStyle: GoogleFonts.kanit(),
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
@@ -154,10 +158,10 @@ class _RegisterUIState extends State<RegisterUI> {
                   bottom: MediaQuery.of(context).size.width * 0.05,
                 ),
                 child: TextField(
-                  controller: emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
+                  controller: costTravelCtrl,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'อีเมล์',
+                    labelText: 'ป้อนค่าใช้จ่ายในการเดินทาง (บาท)',
                     labelStyle: GoogleFonts.kanit(),
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
@@ -170,12 +174,22 @@ class _RegisterUIState extends State<RegisterUI> {
                   bottom: MediaQuery.of(context).size.width * 0.05,
                 ),
                 child: TextField(
-                  controller: phoneCtrl,
-                  keyboardType: TextInputType.phone,
+                  controller: dateTravelCtrl,
+                  keyboardType: TextInputType.datetime,
+                  readOnly: true,
                   decoration: InputDecoration(
-                    labelText: 'เบอร์โทรศัพท์',
+                    labelText: 'เลือกวันที่เดินทาง',
                     labelStyle: GoogleFonts.kanit(),
                     floatingLabelBehavior: FloatingLabelBehavior.always,
+                    suffix: IconButton(
+                      onPressed: () {
+                        opencalendar();
+                      },
+                      icon: Icon(
+                        Icons.calendar_month,
+                        color: Colors.amber,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -186,64 +200,37 @@ class _RegisterUIState extends State<RegisterUI> {
                   bottom: MediaQuery.of(context).size.width * 0.05,
                 ),
                 child: TextField(
-                  controller: usernameCtrl,
+                  controller: dayTravelCtrl,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'ชื่อผู้ใช้',
+                    labelText: 'ป้อนจำนวนวันที่เดินทางไป',
                     labelStyle: GoogleFonts.kanit(),
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                   ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                  left: MediaQuery.of(context).size.width * 0.15,
-                  right: MediaQuery.of(context).size.width * 0.15,
-                  bottom: MediaQuery.of(context).size.width * 0.1,
-                ),
-                child: TextField(
-                  obscureText: true,
-                  controller: passwordCtrl,
-                  decoration: InputDecoration(
-                      labelText: 'รหัสผ่าน',
-                      labelStyle: GoogleFonts.kanit(),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                      suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              pwdStatus = pwdStatus == true ? false : true;
-                            });
-                          },
-                          icon: Icon(
-                            pwdStatus == true
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.amber,
-                          ))),
                 ),
               ),
               ElevatedButton(
                 onPressed: () async {
-                  if (fullnameCtrl.text.trim().isEmpty == true) {
-                    showWarningMessage(context, 'ป้อนชื่อ-สกุลด้วย');
-                  } else if (emailCtrl.text.trim().isEmpty == true) {
-                    showWarningMessage(context, 'ป้อนอีเมลล์ด้วย');
-                  } else if (phoneCtrl.text.trim().isEmpty == true) {
-                    showWarningMessage(context, 'ป้อนเบอร์โทรด้วย');
-                  } else if (usernameCtrl.text.trim().isEmpty == true) {
-                    showWarningMessage(context, 'ป้อนชื่อผู้ใช้ดด้วย');
-                  } else if (passwordCtrl.text.trim().isEmpty == true) {
-                    showWarningMessage(context, 'ป้อนรหัสผ่านด้วย');
+                  //Validate หน้าจอ
+                  if (placeTravelCtrl.text.trim().isEmpty == true) {
+                    showWarningMessage(context, 'ป้อนสถานที่ที่ไปด้วย');
+                  } else if (costTravelCtrl.text.trim().isEmpty == true) {
+                    showWarningMessage(context, 'ป้อนค่าใช้จ่ายในการเดินทางด้วย');
+                  } else if (dateTravelCtrl.text.trim().isEmpty == true) {
+                    showWarningMessage(context, 'เลือกวันที่ไปด้วย');
+                  } else if (dayTravelCtrl.text.trim().isEmpty == true) {
+                    showWarningMessage(context, 'ป้อนจำนวนวันที่เดินทางไปด้วย');
                   } else if (saveImage == null) {
-                    showWarningMessage(context, 'ถ่ายรูปด้วย');
+                    showWarningMessage(context, 'เลือกรูปด้วย');
                   } else {
-                    int result = await DBHelper.insertUser(
-                      User(
-                        fullname: fullnameCtrl.text,
-                        email: emailCtrl.text,
-                        phone: phoneCtrl.text,
-                        username: usernameCtrl.text,
-                        password: passwordCtrl.text,
-                        picture: saveImage,
+                    //บันทึกลงฐานข้อมูล
+                    int result = await DBHelper.insertTravel(
+                      Travel(
+                        placeTravel: placeTravelCtrl.text,
+                        costTravel: costTravelCtrl.text,
+                        dateTravel: dateTravelCtrl.text,
+                        dayTravel: dayTravelCtrl.text,
+                        pictureTravel: saveImage,
                       ),
                     );
 
@@ -256,7 +243,7 @@ class _RegisterUIState extends State<RegisterUI> {
                   }
                 },
                 child: Text(
-                  'ลงทะเบียน',
+                  'บันทึก',
                   style: GoogleFonts.kanit(),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -266,9 +253,6 @@ class _RegisterUIState extends State<RegisterUI> {
                   ),
                   backgroundColor: Colors.amber,
                 ),
-              ),
-              SizedBox(
-                height: MediaQuery.of(context).size.width * 0.15,
               ),
             ],
           ),
